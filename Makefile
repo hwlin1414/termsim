@@ -1,6 +1,6 @@
 CC=clang
-CFLAGS=-O3 -Weverything -g
-LIBS=#-lreadline -lpthread -lncursesw -ldl -lm
+CFLAGS=-O3 -Weverything -g -fPIC
+LIBS=-ldl#-lreadline -lpthread -lncursesw -ldl -lm
 SHAREDOBJS=os_freebsd.o term.o
 SHAREDLIB=os_freebsd.so
 SHAREDFLAGS=-shared -Wl,-soname,$(SHAREDLIB).1
@@ -11,16 +11,25 @@ RM=rm -f
 all: $(SHAREDLIB) $(TARGET)
 
 $(SHAREDLIB): $(SHAREDOBJS)
-	$(CC) $(SHAREDFLAGS) -o $(.TARGET) $(SHAREDOBJS)
-
-$(SHAREDOBJS): $(.PREFIX).c
-	$(CC) $(CFLAGS) -fPIC -o $(.TARGET) -c $(.PREFIX).c
+	$(CC) $(SHAREDFLAGS) -o os_freebsd.so os_freebsd.o term.o
+os_freebsd.o: os_freebsd.c
+	$(CC) $(CFLAGS) -o os_freebsd.o -c os_freebsd.c
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(LIBS) -o $(.TARGET) $(OBJS)
+	$(CC) $(CFLAGS) $(LIBS) -o $(TARGET) $(OBJS)
 
-$(OBJS): $(.PREFIX).c
-	$(CC) $(CFLAGS) -o $(.TARGET) -c $(.PREFIX).c
+main.o: main.c
+	$(CC) $(CFLAGS) -o main.o -c main.c
+logger.o: logger.c
+	$(CC) $(CFLAGS) -o logger.o -c logger.c
+os.o: os.c
+	$(CC) $(CFLAGS) -o os.o -c os.c
+machine.o: machine.c
+	$(CC) $(CFLAGS) -o machine.o -c machine.c
+term.o: term.c
+	$(CC) $(CFLAGS) -o term.o -c term.c
+disk.o: disk.c
+	$(CC) $(CFLAGS) -o disk.o -c disk.c
 
 clean:
 	$(RM) $(OBJS) $(SHAREDOBJS)
